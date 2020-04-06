@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Apr  6 12:25:59 2020
-
+online source: https://towardsdatascience.com/genetic-algorithm-implementation-in-python-5ab67bb124a6
 @author: TiberEmi
 """
 
