@@ -1,26 +1,67 @@
 
-import numpy
+import numpy as np
 
 def cal_pop_fitness(equation_inputs, pop):
     # Calculating the fitness value of each solution in the current population.
     # The fitness function caulcuates the sum of products between each input and its corresponding weight.
-    fitness = numpy.sum(pop*equation_inputs, axis=1)
+    fitness = np.sum(pop*equation_inputs, axis=1)
     return fitness
+
+def foxholes(pop,genes,nr_bit_num):
+#    x1min=-65.536
+#    x1max=65.536
+#    x2min=-65.536
+#    x2max=65.536
+#    R=1500 # steps resolution
+#    x1=np.linspace(x1min,x1max,R)
+#    x2=np.linspace(x2min,x2max,R)
+        
+    a=np.array([[-32, -16, 0, 16, 32, -32, -16, 0, 16, 32, -32, -16, 0, 16, 32, -32, -16, 0, 16, 32, -32, -16, 0, 16, 32],[-32, -32, -32, -32, -32, -16, -16, -16, -16, -16, 0, 0, 0, 0, 0, 16, 16, 16, 16, 16, 32, 32, 32, 32, 32]]) 
+        
+        # initializing list  
+        #pop = [[1, 0, 0, 1, 1, 0],
+        #       [0, 0, 1, 0, 1, 0]]
+        
+          
+        # using join() + list comprehension 
+        # converting binary list to integer
+    X = np.zeros([np.size(pop,0),genes])
+    for j in range(np.size(pop,0)):
+        X[j,:] = np.array([[int("".join(str(x) for x in pop[j,0:nr_bit_num]), 2), int("".join(str(x) for x in pop[j,nr_bit_num:nr_bit_num*2]), 2)]])
+              
+        
+        Fk = np.zeros([np.size(pop,0),25])  
+        Fs = np.zeros(np.size(pop,0))
+        f = np.zeros(np.size(pop,0))
+        
+        for i in range(np.size(pop,0)):
+                             
+            for k in range(25):
+                Fk[i,k] = 1/(k+1+(((X[i,0])/(10**5)-65)-a[0,k])**6+(((X[i,1])/(10**5)-65)-a[1,k])**6)
+         
+        
+            Fs[i]=sum(Fk[i,:],1)
+            f[i]=((1/500)+Fs[i])**(-1)
+    
+    
+    return f
+
+
 
 def select_mating_pool(pop, fitness, num_parents):
     # Selecting the best individuals in the current generation as parents for producing the offspring of the next generation.
-    parents = numpy.empty((num_parents, pop.shape[1]))
+    parents = np.empty((num_parents, pop.shape[1]))
     for parent_num in range(num_parents):
-        max_fitness_idx = numpy.where(fitness == numpy.max(fitness))
+        max_fitness_idx = np.where(fitness == np.max(fitness))
         max_fitness_idx = max_fitness_idx[0][0]
         parents[parent_num, :] = pop[max_fitness_idx, :]
         fitness[max_fitness_idx] = -99999999999
     return parents
 
 def crossover(parents, offspring_size):
-    offspring = numpy.empty(offspring_size)
+    offspring = np.empty(offspring_size)
     # The point at which crossover takes place between two parents. Usually it is at the center.
-    crossover_point = numpy.uint8(offspring_size[1]/2)
+    crossover_point = np.uint8(offspring_size[1]/2)
 
     for k in range(offspring_size[0]):
         # Index of the first parent to mate.
@@ -37,6 +78,6 @@ def mutation(offspring_crossover):
     # Mutation changes a single gene in each offspring randomly.
     for idx in range(offspring_crossover.shape[0]):
         # The random value to be added to the gene.
-        random_value = numpy.random.uniform(-1.0, 1.0, 1)
+        random_value = np.random.uniform(-1.0, 1.0, 1)
         offspring_crossover[idx, 4] = offspring_crossover[idx, 4] + random_value
     return offspring_crossover
