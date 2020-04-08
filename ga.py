@@ -56,7 +56,7 @@ def select_mating_pool(pop, fitness, num_parents):
     # Selecting the best individuals in the current generation as parents for producing the offspring of the next generation.
     parents = np.empty((num_parents, pop.shape[1]))
     for parent_num in range(num_parents):
-        max_fitness_idx = np.where(fitness == np.max(fitness))
+        max_fitness_idx = np.where(fitness == np.min(fitness))
         max_fitness_idx = max_fitness_idx[0][0]
         parents[parent_num, :] = pop[max_fitness_idx, :]
         fitness[max_fitness_idx] = -99999999999
@@ -95,7 +95,8 @@ def mutation(offspring_mutation_num,new_population):
     offspring_mutation = new_population[new_population.shape[0]-offspring_mutation_num:,:]
     for idx in range(offspring_mutation.shape[0]):
         # The random value to be added to the gene.
-        random_value = np.random.randint(0, 2, 1)
-        random_position = np.random.randint(0, offspring_mutation.shape[1], 1)
-        offspring_mutation[idx, random_position] = random_value
+        # random_value = np.random.randint(0, 2, 1)
+        
+        random_position = np.random.randint(0, offspring_mutation.shape[1], 10)
+        offspring_mutation[idx, random_position] = offspring_mutation[idx, random_position]^1
     return offspring_mutation
