@@ -7,7 +7,8 @@ online source: https://towardsdatascience.com/genetic-algorithm-implementation-i
 
 import numpy as np
 import ga
-
+import matplotlib.pyplot as plt
+from pylive import live_plotter_xy
 
 
 sol_per_pop = 100
@@ -47,10 +48,17 @@ n_mut_point = 10
 num_generations = 2000
 
 num_parents_mating = int(pop_size[0]*2*0.9)
-
+line1 = []
+fun = []
+gen = []
+old_population = []
 for generation in range(num_generations):
      # Measuring the fitness of each chromosome in the population.
      fitness = ga.foxholes(new_population,genes,nr_bit_num)
+     print(np.min(fitness))
+     fun = np.append(fun,np.min(fitness))
+     gen = np.append(gen,generation)
+     line1 = live_plotter_xy(gen,fun,line1)
      if generation>1:
         fit =  np.concatenate([old_fitness,fitness])
         index_selection = sorted(range(len(fit)), key=lambda k: fit[k])
