@@ -7,12 +7,10 @@ online source: https://towardsdatascience.com/genetic-algorithm-implementation-i
 
 import numpy as np
 import ga
-import matplotlib.pyplot as plt
-from pylive import live_plotter_xy
 
-plt.close("all")
 
-sol_per_pop = 100
+
+sol_per_pop = 50
 
 nr_bit_num = 27
 
@@ -46,23 +44,15 @@ new_population = np.random.randint(low=0, high=2, size=pop_size)
 
 n_cross_point = 8
 
-num_generations = 2000
+num_generations = 5000
 
-num_parents_mating = int(pop_size[0]*2*0.7)
-line1 = []
-fun = []
-gen = []
+num_parents_mating = int(pop_size[0]*2*0.8)
 
 for generation in range(num_generations):
      # Measuring the fitness of each chromosome in the population.
+     fitness = 1/ga.foxholes(new_population,genes,nr_bit_num)
     
-     fitness = ga.foxholes(new_population,genes,nr_bit_num)
-     fun = np.append(fun,np.min(fitness))
-     gen = np.append(gen,generation)
-     #line1 = live_plotter_xy(gen,fun,line1)
-     print(np.min(fitness))
     # Selecting the best parents in the population for mating.
-    
      parents = ga.select_mating_pool(new_population, fitness, 
                                        num_parents_mating)
  
@@ -76,17 +66,17 @@ for generation in range(num_generations):
      new_population[0:int(parents.shape[0]/2), :] = offspring_crossover
      new_population[int(parents.shape[0]/2):, :] = offspring_mutation
          # The best result in the current iteration.
-     
+
 
 
 # Getting the best solution after iterating finishing all generations.
 #At first, the fitness is calculated for each solution in the final generation.
-fitness = ga.foxholes(new_population,genes,nr_bit_num)
+fitness = 1/ga.foxholes(new_population,genes,nr_bit_num)
 # Then return the index of that solution corresponding to the best fitness.
-best_match_idx = np.where(fitness == np.min(fitness))
+best_match_idx = np.where(fitness == np.max(fitness))
 conversion = np.zeros([np.size(new_population,0),genes])
 for j in range(np.size(new_population,0)):
      conversion[j,:] = np.array([[int("".join(str(x) for x in new_population[j,0:nr_bit_num]), 2), int("".join(str(x) for x in new_population[j,nr_bit_num+1:nr_bit_num*2+1]), 2)]])
 best = conversion[best_match_idx,:]/(10**6)-65                 
 print("Best solution : ", best)
-print("Best solution fitness : ", fitness[best_match_idx])
+print("Best solution fitness : ", 1/fitness[best_match_idx])
