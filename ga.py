@@ -28,20 +28,24 @@ def foxholes(pop,genes,nr_bit_num):
     X = np.zeros([np.size(pop,0),genes])
     for j in range(np.size(pop,0)):
         X[j,:] = np.array([[int("".join(str(x) for x in pop[j,0:nr_bit_num]), 2), int("".join(str(x) for x in pop[j,nr_bit_num:nr_bit_num*2]), 2)]])
-              
+     
+                 
+    X = X*(10**(-6))-65.0
+          
+    Fk = np.zeros([np.size(pop,0),25])  
+    Fs = np.zeros(np.size(pop,0))
+    f = np.zeros(np.size(pop,0))
         
-        Fk = np.zeros([np.size(pop,0),25])  
-        Fs = np.zeros(np.size(pop,0))
-        f = np.zeros(np.size(pop,0))
-        
-        for i in range(np.size(pop,0)):
+    for i in range(np.size(pop,0)):
                              
-            for k in range(25):
-                Fk[i,k] = 1/(k+1+(((X[i,0])/(10**5)-65)-a[0,k])**6+(((X[i,1])/(10**5)-65)-a[1,k])**6)
-         
+        for k in range(25):
+            Fk[i,k] = (k+1+((X[i,0])-a[0,k])**6+((X[i,1])-a[1,k])**6)**(-1)
+     
+       
+        Fs[i]=np.sum(Fk[i,:],axis=0)
         
-            Fs[i]=sum(Fk[i,:],1)
-            f[i]=((1/500)+Fs[i])**(-1)
+        f[i]=((500**(-1))+Fs[i])**(-1)
+        
     
     
     return f
@@ -58,26 +62,40 @@ def select_mating_pool(pop, fitness, num_parents):
         fitness[max_fitness_idx] = -99999999999
     return parents
 
-def crossover(parents, offspring_size):
-    offspring = np.empty(offspring_size)
+def crossover(parents,n_cross_point, offspring_size):
+    offspring_cross = np.empty(offspring_size)
     # The point at which crossover takes place between two parents. Usually it is at the center.
-    crossover_point = np.uint8(offspring_size[1]/2)
+#    crossover_point = np.uint8(offspring_size[1]/2)
 
     for k in range(offspring_size[0]):
         # Index of the first parent to mate.
         parent1_idx = k%parents.shape[0]
         # Index of the second parent to mate.
         parent2_idx = (k+1)%parents.shape[0]
-        # The new offspring will have its first half of its genes taken from the first parent.
-        offspring[k, 0:crossover_point] = parents[parent1_idx, 0:crossover_point]
-        # The new offspring will have its second half of its genes taken from the second parent.
-        offspring[k, crossover_point:] = parents[parent2_idx, crossover_point:]
-    return offspring
+        
+        breakpoints = np.random.permutation(parents.shape[1]-1)
+        breakpoints = np.sort(breakpoints[:n_cross_point])
 
-def mutation(offspring_crossover):
+        offspring_cross[k,:] = np.concatenate((parents[parent1_idx,:breakpoints[0]], parents[parent2_idx,breakpoints[0]:]),axis=0)
+        for j in np.arange(1,n_cross_point):
+            if j%2:
+                offspring_cross[k,:] = np.concatenate((offspring_cross[k,:breakpoints[j]], parents[parent2_idx,breakpoints[j]:]),axis=0)
+            else:
+                offspring_cross[k,:] = np.concatenate((offspring_cross[k,:breakpoints[j]], parents[parent1_idx,breakpoints[j]:]),axis=0)
+        
+    
+#        # The new offspring will have its first half of its genes taken from the first parent.
+#        offspring_cross[k, 0:crossover_point] = parents[parent1_idx, 0:crossover_point]
+#        # The new offspring will have its second half of its genes taken from the second parent.
+#        offspring_cross[k, crossover_point:] = parents[parent2_idx, crossover_point:]
+    return offspring_cross
+
+def mutation(offspring_mutation_num,new_population):
     # Mutation changes a single gene in each offspring randomly.
-    for idx in range(offspring_crossover.shape[0]):
+    offspring_mutation = new_population[new_population.shape[0]-offspring_mutation_num:,:]
+    for idx in range(offspring_mutation.shape[0]):
         # The random value to be added to the gene.
-        random_value = np.random.uniform(-1.0, 1.0, 1)
-        offspring_crossover[idx, 4] = offspring_crossover[idx, 4] + random_value
-    return offspring_crossover
+        random_value = np.random.randint(0, 2, 1)
+        random_position = np.random.randint(0, offspring_mutation.shape[1], 1)
+        offspring_mutation[idx, random_position] = random_value
+    return offspring_mutation
